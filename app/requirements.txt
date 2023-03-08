@@ -1,3 +1,4 @@
 Flask==2.2.3
 Pytest==7.2.1
 pymongo==4.3.3
+requests

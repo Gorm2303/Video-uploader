@@ -4,9 +4,13 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 # Connect to MongoDB instance
-client = MongoClient('localhost', 27017, username='root', password='root')
+client = MongoClient('mongodb://root:root@127.0.0.1:27017/video_db')
 db = client['video_db']
 videosCollection = db['videos']
+
+@app.route('/')
+def index():
+    return 'Welcome to the Uploader API!'
 
 #Endpoint for uploading video metadata
 @app.route('/videometadata', methods=['POST'])
