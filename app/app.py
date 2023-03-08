@@ -6,16 +6,16 @@ app = Flask(__name__)
 # Connect to MongoDB instance
 client = MongoClient('localhost', 27017, username='root', password='root')
 db = client['video_db']
-videos = db['videos']
+videosCollection = db['videos']
 
 #Endpoint for uploading video metadata
-@app.route('/videos', methods=['POST'])
+@app.route('/videometadata', methods=['POST'])
 def upload_video_metadata():
     # Parse JSON request body
     data = request.json
 
     # Insert video into MongoDB
-    result = videos.insert_one(data)
+    result = videosCollection.insert_one(data)
 
     # Return JSON response
     response = {
