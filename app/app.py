@@ -4,7 +4,8 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 # Connect to MongoDB instance
-client = MongoClient('mongodb://root:root@127.0.0.1:27017/video_db')
+client = MongoClient('mongodb+srv://admin:admin@cluster0.acahawh.mongodb.net/?retryWrites=true&w=majority')
+#client = MongoClient('mongodb://root:root@localhost:27017')
 db = client['video_db']
 videosCollection = db['videos']
 

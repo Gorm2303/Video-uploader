@@ -1,6 +1,11 @@
 from pymongo import MongoClient
 import requests
 
+
+# Connect to MongoDB instance
+#client = MongoClient('localhost', 27017, username='root', password='root')
+#db = client['video_db']
+#videos = db['videos']
 def test_create_video():
     url = 'http://localhost:80/videometadata'
     data = {
@@ -21,11 +26,6 @@ def test_create_video():
     assert isinstance(response.json()['id'], str)
 
 test_create_video()
-# Connect to MongoDB instance
-client = MongoClient('localhost', 27017, username='root', password='root')
-db = client['video_db']
-videos = db['videos']
-
 # Query and print all video documents
-for video in videos.find():
-    print(video)
+#for video in videos.find():
+ #   print(video)
