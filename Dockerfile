@@ -4,6 +4,9 @@ FROM python:3.9-slim-buster
 # Set the working directory to /app
 WORKDIR /app
 
+# Create folders for videos and posters
+RUN mkdir -p ./data/videos && mkdir -p ./data/images
+
 # Copy the current directory contents into the container at /app
 COPY ./app /app
 
