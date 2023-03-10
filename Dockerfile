@@ -4,6 +4,9 @@ FROM python:3.9-slim-buster
 # Set the working directory to /app
 WORKDIR /app
 
+# Create folders for videos and posters
+RUN mkdir -p ./data/videos && mkdir -p ./data/images
+
 # Copy the current directory contents into the container at /app
 COPY ./app /app
 
@@ -14,7 +17,7 @@ RUN pip install --trusted-host pypi.python.org -r "requirements.txt"
 EXPOSE 80
 
 # Define environment variable
-ENV FLASK_APP=initial.py
+ENV FLASK_APP=app.py
 
 # Run app.py when the container launches
 CMD ["flask", "run", "--host=0.0.0.0", "--port=80"]
