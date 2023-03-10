@@ -20,7 +20,7 @@ def index():
     return 'Welcome to the Uploader API!'
 
 #Endpoint for uploading video metadata
-@app.route('/videometadata', methods=['POST'])
+@app.route('/api/v1/videometadata', methods=['POST'])
 def upload_video_metadata():
     # Parse JSON request body
     data = request.json
