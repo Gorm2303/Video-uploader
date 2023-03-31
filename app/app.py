@@ -33,7 +33,7 @@ def upload_video_metadata():
     }
     return jsonify(response)
 
-@app.route('/poster', methods=['POST'])
+@app.route('/api/v1/poster', methods=['POST'])
 @cross_origin()
 def upload_image():
     chunk_index = request.form['chunkIndex']
@@ -63,21 +63,8 @@ def upload_image():
                 os.remove(chunk_path)
 
     return jsonify({'url': image_file_path})
-
-""" @app.route('/video', methods=['POST'])
-@cross_origin()
-def upload_video():
-    file = request.files['file']
-    if file:
-        # generate a UUID4
-        filename = 'video_' + str(uuid.uuid4())
-        file_path = os.path.join('/app/data/videos', filename)
-        file.save(file_path)
-        return jsonify({'url': file_path})
-    else:
-        return jsonify({'error': 'No file found'}) """
     
-@app.route('/video', methods=['POST'])
+@app.route('/api/v1/video', methods=['POST'])
 @cross_origin()
 def upload_video():
     chunk_index = request.form['chunkIndex']
