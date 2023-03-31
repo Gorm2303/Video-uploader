@@ -39,16 +39,17 @@ def upload_image():
     chunk_index = request.form['chunkIndex']
     total_chunks = request.form['chunks']
     chunk_file = request.files['chunk']
-    file_name = chunk_file.filename
+    file_name = request.form['filename']
+    chunk_name = chunk_file.filename
     image_folder = '/app/data/images'
-    image_name = 'image_' + str(uuid.uuid4())
+    image_name = 'image_' + str(uuid.uuid4()) + os.path.splitext(file_name)[1]
     image_file_path = os.path.join(image_folder, image_name)
 
     chunk_folder = '/app/data/images/chunks'
     if not os.path.exists(chunk_folder):
         os.makedirs(chunk_folder)
 
-    chunk_file_path = os.path.join(chunk_folder, f'{file_name}.{chunk_index}')
+    chunk_file_path = os.path.join(chunk_folder, f'{chunk_name}.{chunk_index}')
 
     chunk_file.save(chunk_file_path)
 
@@ -56,7 +57,7 @@ def upload_image():
 
         with open(image_file_path, 'wb') as output_file:
             for i in range(int(total_chunks)):
-                chunk_path = os.path.join(chunk_folder, f'{file_name}.{i}')
+                chunk_path = os.path.join(chunk_folder, f'{chunk_name}.{i}')
                 with open(chunk_path, 'rb') as input_file:
                     output_file.write(input_file.read())
 
@@ -70,16 +71,17 @@ def upload_video():
     chunk_index = request.form['chunkIndex']
     total_chunks = request.form['chunks']
     chunk_file = request.files['chunk']
-    file_name = chunk_file.filename
+    file_name = request.form['filename']
+    chunk_name = chunk_file.filename
     video_folder = '/app/data/videos'
-    video_name = 'video_' + str(uuid.uuid4())
+    video_name = 'video_' + str(uuid.uuid4()) + os.path.splitext(file_name)[1]
     video_file_path = os.path.join(video_folder, video_name)
 
     chunk_folder = '/app/data/videos/chunks'
     if not os.path.exists(chunk_folder):
         os.makedirs(chunk_folder)
 
-    chunk_file_path = os.path.join(chunk_folder, f'{file_name}.{chunk_index}')
+    chunk_file_path = os.path.join(chunk_folder, f'{chunk_name}.{chunk_index}')
 
     chunk_file.save(chunk_file_path)
 
@@ -87,7 +89,7 @@ def upload_video():
 
         with open(video_file_path, 'wb') as output_file:
             for i in range(int(total_chunks)):
-                chunk_path = os.path.join(chunk_folder, f'{file_name}.{i}')
+                chunk_path = os.path.join(chunk_folder, f'{chunk_name}.{i}')
                 with open(chunk_path, 'rb') as input_file:
                     output_file.write(input_file.read())
 
