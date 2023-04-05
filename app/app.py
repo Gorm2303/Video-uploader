@@ -41,11 +41,11 @@ def upload_image():
     chunk_file = request.files['chunk']
     file_name = request.form['filename']
     chunk_name = chunk_file.filename
-    image_folder = '/app/data/images'
+    image_folder = '/data/images'
     image_name = 'image_' + str(uuid.uuid4()) + os.path.splitext(file_name)[1]
     image_file_path = os.path.join(image_folder, image_name)
 
-    chunk_folder = '/app/data/images/chunks'
+    chunk_folder = '/data/images/chunks'
     if not os.path.exists(chunk_folder):
         os.makedirs(chunk_folder)
 
@@ -73,11 +73,11 @@ def upload_video():
     chunk_file = request.files['chunk']
     file_name = request.form['filename']
     chunk_name = chunk_file.filename
-    video_folder = '/app/data/videos'
+    video_folder = '/data/videos'
     video_name = 'video_' + str(uuid.uuid4()) + os.path.splitext(file_name)[1]
     video_file_path = os.path.join(video_folder, video_name)
 
-    chunk_folder = '/app/data/videos/chunks'
+    chunk_folder = '/data/videos/chunks'
     if not os.path.exists(chunk_folder):
         os.makedirs(chunk_folder)
 
