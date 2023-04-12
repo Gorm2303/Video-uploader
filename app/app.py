@@ -1,13 +1,12 @@
 from pymongo import MongoClient
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask import Flask, request, jsonify, flash, Response
+from flask_cors import CORS, cross_origin
 import os
 import uuid
 
 
 app = Flask(__name__)
 cors = CORS(app)
-cors = CORS(app, origins=["http://localhost:3000"])
 
 # Connect to MongoDB instance
 client = MongoClient('mongodb+srv://admin:admin@cluster0.acahawh.mongodb.net/?retryWrites=true&w=majority')
@@ -24,10 +23,8 @@ def index():
 def upload_video_metadata():
     # Parse JSON request body
     data = request.json
-
     # Insert video into MongoDB
     result = videosCollection.insert_one(data)
-
     # Return JSON response
     response = {
         'success': True,
@@ -36,33 +33,69 @@ def upload_video_metadata():
     }
     return jsonify(response)
 
-@app.route('/api/v1/video', methods=['POST'])
-def upload_video():
-    file = request.files['file']
-    # generate a UUID4
-    filename = 'video' + str(uuid.uuid4())
-    filepath = os.path.join('/app/data/videos', filename)
-    file.save(filepath)
-    response = {
-        'success': True,
-        "message": "File uploaded successfully",
-        "url": filepath,
-    }
-    return response
-
 @app.route('/api/v1/poster', methods=['POST'])
-def upload_poster():
-    file = request.files['file']
-    # generate a UUID4
-    filename = 'image' + str(uuid.uuid4())
-    filepath = os.path.join('/app/data/images', filename)
-    file.save(filepath)
-    response = {
-        'success': True,
-        "message": "File uploaded successfully",
-        "url": filepath,
-    }
-    return response
+@cross_origin()
+def upload_image():
+    chunk_index = request.form['chunkIndex']
+    total_chunks = request.form['chunks']
+    chunk_file = request.files['chunk']
+    file_name = request.form['filename']
+    chunk_name = chunk_file.filename
+    image_folder = '/data/images'
+    image_name = 'image_' + str(uuid.uuid4()) + os.path.splitext(file_name)[1]
+    image_file_path = os.path.join(image_folder, image_name)
+
+    chunk_folder = '/data/images/chunks'
+    if not os.path.exists(chunk_folder):
+        os.makedirs(chunk_folder)
+
+    chunk_file_path = os.path.join(chunk_folder, f'{chunk_name}.{chunk_index}')
+
+    chunk_file.save(chunk_file_path)
+
+    if int(chunk_index) == int(total_chunks) - 1:
+
+        with open(image_file_path, 'wb') as output_file:
+            for i in range(int(total_chunks)):
+                chunk_path = os.path.join(chunk_folder, f'{chunk_name}.{i}')
+                with open(chunk_path, 'rb') as input_file:
+                    output_file.write(input_file.read())
+
+                os.remove(chunk_path)
+
+    return jsonify({'url': image_file_path})
+    
+@app.route('/api/v1/video', methods=['POST'])
+@cross_origin()
+def upload_video():
+    chunk_index = request.form['chunkIndex']
+    total_chunks = request.form['chunks']
+    chunk_file = request.files['chunk']
+    file_name = request.form['filename']
+    chunk_name = chunk_file.filename
+    video_folder = '/data/videos'
+    video_name = 'video_' + str(uuid.uuid4()) + os.path.splitext(file_name)[1]
+    video_file_path = os.path.join(video_folder, video_name)
+
+    chunk_folder = '/data/videos/chunks'
+    if not os.path.exists(chunk_folder):
+        os.makedirs(chunk_folder)
+
+    chunk_file_path = os.path.join(chunk_folder, f'{chunk_name}.{chunk_index}')
+
+    chunk_file.save(chunk_file_path)
+
+    if int(chunk_index) == int(total_chunks) - 1:
+
+        with open(video_file_path, 'wb') as output_file:
+            for i in range(int(total_chunks)):
+                chunk_path = os.path.join(chunk_folder, f'{chunk_name}.{i}')
+                with open(chunk_path, 'rb') as input_file:
+                    output_file.write(input_file.read())
+
+                os.remove(chunk_path)
+
+    return jsonify({'url': video_file_path})
 
 if __name__ == '__main__':
     app.run()
