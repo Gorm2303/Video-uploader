@@ -1,16 +1,13 @@
 from pymongo import MongoClient
 from flask import Flask, request, jsonify, flash, Response
-from flask_cors import CORS, cross_origin
 import os
 import uuid
 
 
 app = Flask(__name__)
-cors = CORS(app)
 
 # Connect to MongoDB instance
-client = MongoClient('mongodb+srv://admin:admin@cluster0.acahawh.mongodb.net/?retryWrites=true&w=majority')
-#client = MongoClient('mongodb://root:root@localhost:27017')
+client = MongoClient(os.environ.get("MONGO_URI"))
 db = client['video_db']
 videosCollection = db['videos']
 

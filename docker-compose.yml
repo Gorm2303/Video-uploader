@@ -1,16 +1,24 @@
 version: '3.9'
 services:
-  mongodb:
-    image: mongo:latest
+  video_uploader:
+    build: .
     restart: always
-    container_name: mongodb
-    volumes:
-      - ./mongodb-volume:/data/db
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo-js:ro
-    ports:
-      - "27017:27017"
+    expose:
+      - "8080"
+    depends_on:
+      - mongo_video_metadata
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
-      MONGO_INITDB_DATABASE: video_db
-
+      MONGO_URI: "mongodb://root:root@mongo_video_metadata:27017"
+  mongo_video_metadata:
+      image: mongo:latest
+      restart: always
+      environment:
+        MONGO_INITDB_ROOT_USERNAME: root
+        MONGO_INITDB_ROOT_PASSWORD: root
+        MONGO_INITDB_DATABASE: video_db
+      expose:
+        - "27017"
+      volumes:
+        - video_metadata:/data/db
+volumes:
+  video_metadata:
