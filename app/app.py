@@ -84,8 +84,19 @@ def upload_file(request, file_folder, file_prefix, file_ext):
                     output_file.write(input_file.read())
 
                 os.remove(chunk_path)
+        
+        # Check if the file was created
+        if os.path.isfile(file_path):
+            return jsonify({'url': file_path, 'msg': 'File created successfully!'})
+        else:
+            return jsonify({'msg': 'File creation failed.'})
+    
+    if os.path.isfile(chunk_file_path):
+        return jsonify({'msg': f'Chunk {chunk_index} recieved'})
+    else:
+        return jsonify({'msg': f'Failed storing chunk {chunk_index}.'})
 
-    return jsonify({'url': file_path})
+
 
 if __name__ == '__main__':
     app.run()
