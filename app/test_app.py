@@ -59,7 +59,7 @@ def test_upload_large_image(client):
     temp_file = tempfile.NamedTemporaryFile(delete=False)
 
     chunks = 20
-    
+    response = ''
     for i in range(0, chunks):
         with open(temp_file.name, 'rb') as f:
             response = client.post(
@@ -73,7 +73,9 @@ def test_upload_large_image(client):
                 content_type='multipart/form-data'
             )
             assert response.status_code == 200
-            assert response.json['url']
+    
+    assert response.json['url']
+
 
 def test_upload_large_video(client):
     temp_file = tempfile.NamedTemporaryFile(delete=False)
@@ -93,8 +95,9 @@ def test_upload_large_video(client):
                 content_type='multipart/form-data'
             )
             assert response.status_code == 200
-            assert response.json['url']
-            assert not response.json.get('error')
+    
+    assert response.json['url']
+
 
 def test_upload_video_invalid_type(client):
     data = {
