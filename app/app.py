@@ -76,23 +76,24 @@ def upload_file(request, file_folder, file_prefix, file_ext):
     chunk_file.save(chunk_file_path)
 
     if int(chunk_index) == int(total_chunks) - 1:
-
+        # If the current chunk is the last chunk, merge all the chunks into the final file
         with open(file_path, 'wb') as output_file:
             for i in range(int(total_chunks)):
                 chunk_path = os.path.join(chunk_folder, f'{chunk_name}.{i}')
                 with open(chunk_path, 'rb') as input_file:
                     output_file.write(input_file.read())
 
+                # Remove the individual chunk files after merging
                 os.remove(chunk_path)
         
-        # Check if the file was created
+        # Check if the final file was created successfully
         if os.path.isfile(file_path):
             return jsonify({'url': file_path, 'msg': 'File created successfully!'})
         else:
             return jsonify({'msg': 'File creation failed.'})
     
     if os.path.isfile(chunk_file_path):
-        return jsonify({'msg': f'Chunk {chunk_index} recieved'})
+        return jsonify({'msg': f'Chunk {chunk_index} received'})
     else:
         return jsonify({'msg': f'Failed storing chunk {chunk_index}.'})
 
