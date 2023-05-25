@@ -160,3 +160,45 @@ def test_delete_video(mock_os, mock_collection, mock_object_id, client):
     assert response.status_code == 200
     assert response.json['success']
     assert response.json['message'] == 'Video deleted successfully'
+
+@patch('app.ObjectId')
+@patch('app.videosCollection')
+@patch('app.os')
+def test_update_video_metadata(mock_os, mock_collection, mock_object_id, client):
+    # Simulate an existing video in the MongoDB collection
+    video_id = 'video_id'
+    existing_video = {
+        '_id': video_id,
+        'title': 'Old Title',
+        'video': '/old/path/to/video',
+        'poster': '/old/path/to/poster'
+    }
+    updated_video = {
+        'id': video_id,
+        'title': 'New Title',
+        'video': '/new/path/to/video',
+        'poster': '/new/path/to/poster'
+    }
+    mock_object_id.return_value = video_id
+    mock_collection.find_one.return_value = existing_video
+    mock_collection.update_one.return_value.modified_count = 1
+
+    # Simulate the existence of old video and poster files
+    mock_os.path.isfile.return_value = True
+
+    response = client.put('/api/v1/videometadata', json=updated_video)
+
+    # Assert that the function has attempted to remove the old video and poster files
+    mock_os.remove.assert_any_call('/old/path/to/video')
+    mock_os.remove.assert_any_call('/old/path/to/poster')
+
+    # Assert that the function has attempted to update the video metadata in the MongoDB collection
+    mock_collection.update_one.assert_called_with(
+        {'_id': video_id},
+        {'$set': updated_video}
+    )
+
+    assert response.status_code == 200
+    assert response.json['success']
+    assert response.json['message'] == 'Video metadata updated successfully'
+    assert response.json['id'] == video_id

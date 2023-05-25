@@ -37,19 +37,48 @@ def upload_video_metadata():
 def update_video_metadata():
     data = request.json
     video_id = data.get('id')
-    
+
     if video_id:
-        # Update the video metadata in MongoDB
-        result = videosCollection.update_one({'_id': ObjectId(video_id)}, {'$set': data})
-        
-        if result.modified_count > 0:
-            # Return JSON response if the video metadata was updated successfully
-            response = {
-                'success': True,
-                'message': 'Video metadata updated successfully',
-                'id': video_id
-            }
-            return jsonify(response), 200
+        # Fetch the existing video from MongoDB
+        existing_video = videosCollection.find_one({'_id': ObjectId(video_id)})
+
+        if existing_video:
+            if 'video' in data and data['video'] != existing_video['video']:
+                # If the video URL has changed, delete the old video file
+                try:
+                    os.remove(existing_video['video'])
+                except FileNotFoundError:
+                    return jsonify({'error': 'Old video file not found'}), 404
+                except Exception as e:
+                    return jsonify({'error': str(e)}), 500
+
+            if 'poster' in data and data['poster'] != existing_video['poster']:
+                # If the poster URL has changed, delete the old poster file
+                try:
+                    os.remove(existing_video['poster'])
+                except FileNotFoundError:
+                    return jsonify({'error': 'Old poster file not found'}), 404
+                except Exception as e:
+                    return jsonify({'error': str(e)}), 500
+
+            # Update the video metadata in MongoDB
+            result = videosCollection.update_one({'_id': ObjectId(video_id)}, {'$set': data})
+
+            if result.modified_count > 0:
+                # Return JSON response if the video metadata was updated successfully
+                response = {
+                    'success': True,
+                    'message': 'Video metadata updated successfully',
+                    'id': video_id
+                }
+                return jsonify(response), 200
+            else:
+                # Return error response if the video ID was not found
+                response = {
+                    'success': False,
+                    'message': 'Video ID not found'
+                }
+                return jsonify(response), 404
         else:
             # Return error response if the video ID was not found
             response = {
