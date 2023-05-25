@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from flask import Flask, request, jsonify
+from bson.objectid import ObjectId
 import os
 import uuid
 
@@ -29,6 +30,40 @@ def upload_video_metadata():
         'id': str(result.inserted_id)
     }
     return jsonify(response)
+
+# Endpoint for updating video metadata
+@app.route('/api/v1/videometadata', methods=['PUT'])
+def update_video_metadata():
+    data = request.json
+    video_id = data.get('id')
+    
+    if video_id:
+        # Update the video metadata in MongoDB
+        result = videosCollection.update_one({'_id': ObjectId(video_id)}, {'$set': data})
+        
+        if result.modified_count > 0:
+            # Return JSON response if the video metadata was updated successfully
+            response = {
+                'success': True,
+                'message': 'Video metadata updated successfully',
+                'id': video_id
+            }
+            return jsonify(response), 200
+        else:
+            # Return error response if the video ID was not found
+            response = {
+                'success': False,
+                'message': 'Video ID not found'
+            }
+            return jsonify(response), 404
+    else:
+        # Return error response if the video ID is missing from the request body
+        response = {
+            'success': False,
+            'message': 'Missing video ID'
+        }
+        return jsonify(response), 400
+
 
 @app.route('/api/v1/poster', methods=['POST'])
 def upload_image():
