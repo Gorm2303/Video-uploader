@@ -1,7 +1,9 @@
 from pymongo import MongoClient
 from flask import Flask, request, jsonify
+from bson.objectid import ObjectId
 import os
 import uuid
+from bson import ObjectId
 
 
 app = Flask(__name__)
@@ -30,6 +32,69 @@ def upload_video_metadata():
     }
     return jsonify(response)
 
+# Endpoint for updating video metadata
+@app.route('/api/v1/videometadata', methods=['PUT'])
+def update_video_metadata():
+    data = request.json
+    video_id = data.get('id')
+
+    if video_id:
+        # Fetch the existing video from MongoDB
+        existing_video = videosCollection.find_one({'_id': ObjectId(video_id)})
+
+        if existing_video:
+            if 'video' in data and data['video'] != existing_video['video']:
+                # If the video URL has changed, delete the old video file
+                try:
+                    os.remove(existing_video['video'])
+                except FileNotFoundError:
+                    return jsonify({'error': 'Old video file not found'}), 404
+                except Exception as e:
+                    return jsonify({'error': str(e)}), 500
+
+            if 'poster' in data and data['poster'] != existing_video['poster']:
+                # If the poster URL has changed, delete the old poster file
+                try:
+                    os.remove(existing_video['poster'])
+                except FileNotFoundError:
+                    return jsonify({'error': 'Old poster file not found'}), 404
+                except Exception as e:
+                    return jsonify({'error': str(e)}), 500
+
+            # Update the video metadata in MongoDB
+            result = videosCollection.update_one({'_id': ObjectId(video_id)}, {'$set': data})
+
+            if result.modified_count > 0:
+                # Return JSON response if the video metadata was updated successfully
+                response = {
+                    'success': True,
+                    'message': 'Video metadata updated successfully',
+                    'id': video_id
+                }
+                return jsonify(response), 200
+            else:
+                # Return error response if the video ID was not found
+                response = {
+                    'success': False,
+                    'message': 'Video ID not found'
+                }
+                return jsonify(response), 404
+        else:
+            # Return error response if the video ID was not found
+            response = {
+                'success': False,
+                'message': 'Video ID not found'
+            }
+            return jsonify(response), 404
+    else:
+        # Return error response if the video ID is missing from the request body
+        response = {
+            'success': False,
+            'message': 'Missing video ID'
+        }
+        return jsonify(response), 400
+
+
 @app.route('/api/v1/poster', methods=['POST'])
 def upload_image():
     image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg']
@@ -57,6 +122,27 @@ def upload_video():
         return jsonify({'error': 'Invalid file type'})
 
     return upload_file(request, file_folder, file_prefix, file_ext)
+
+@app.route('/api/v1/videometadata/<id>', methods=['DELETE'])
+def delete_video(id):
+    # Fetch video from MongoDB
+    video = videosCollection.find_one({"_id": ObjectId(id)})
+    if video is None:
+        return jsonify({'error': 'Video not found'}), 404
+
+    # Delete video and poster files
+    try:
+        os.remove(video['video'])
+        os.remove(video['poster'])
+    except FileNotFoundError:
+        return jsonify({'error': 'File not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    # Delete video from MongoDB
+    videosCollection.delete_one({"_id": ObjectId(id)})
+
+    return jsonify({'success': True, 'message': 'Video deleted successfully'}), 200
 
 
 def upload_file(request, file_folder, file_prefix, file_ext):
