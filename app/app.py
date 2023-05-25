@@ -2,6 +2,7 @@ from pymongo import MongoClient
 from flask import Flask, request, jsonify
 import os
 import uuid
+from bson import ObjectId
 
 
 app = Flask(__name__)
@@ -57,6 +58,27 @@ def upload_video():
         return jsonify({'error': 'Invalid file type'})
 
     return upload_file(request, file_folder, file_prefix, file_ext)
+
+@app.route('/api/v1/video/<id>', methods=['DELETE'])
+def delete_video(id):
+    # Fetch video from MongoDB
+    video = videosCollection.find_one({"_id": ObjectId(id)})
+    if video is None:
+        return jsonify({'error': 'Video not found'}), 404
+
+    # Delete video and poster files
+    try:
+        os.remove(video['video'])
+        os.remove(video['poster'])
+    except FileNotFoundError:
+        return jsonify({'error': 'File not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    # Delete video from MongoDB
+    videosCollection.delete_one({"_id": ObjectId(id)})
+
+    return jsonify({'success': True, 'message': 'Video deleted successfully'}), 200
 
 
 def upload_file(request, file_folder, file_prefix, file_ext):
