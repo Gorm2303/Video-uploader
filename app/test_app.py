@@ -148,7 +148,7 @@ def test_delete_video(mock_os, mock_collection, mock_object_id, client):
     # Simulate the existence of video and poster files
     mock_os.path.isfile.return_value = True
 
-    response = client.delete(f'/api/v1/video/{video_id}')
+    response = client.delete(f'/api/v1/videometadata/{video_id}')
 
     # Assert that the function has attempted to remove the video and poster files
     mock_os.remove.assert_any_call('/path/to/video')

@@ -59,7 +59,7 @@ def upload_video():
 
     return upload_file(request, file_folder, file_prefix, file_ext)
 
-@app.route('/api/v1/video/<id>', methods=['DELETE'])
+@app.route('/api/v1/videometadata/<id>', methods=['DELETE'])
 def delete_video(id):
     # Fetch video from MongoDB
     video = videosCollection.find_one({"_id": ObjectId(id)})
